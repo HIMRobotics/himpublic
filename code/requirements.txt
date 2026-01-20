@@ -1,0 +1,35 @@
+# Adam Development Requirements
+
+# Core
+pygame>=2.5.0           # Gamepad/controller input
+numpy>=1.24.0           # Numerical operations, audio processing
+
+# Audio - Basic TTS
+pyttsx3>=2.90           # Offline TTS (robotic voice)
+gtts>=2.3.0             # Google TTS (needs internet)
+
+# Audio - High Quality TTS (ElevenLabs)
+elevenlabs>=1.0.0       # ElevenLabs API - realistic voices
+
+# Audio Playback & Capture
+simpleaudio>=1.0.4      # Cross-platform audio playback
+sounddevice>=0.4.6      # Real-time audio I/O for microphone
+pydub>=0.25.1           # Audio format conversion (MP3 decoding)
+
+# Realtime Voice Conversation
+websockets>=12.0        # WebSocket client for streaming APIs
+openai>=1.0.0           # OpenAI API (GPT-4, Realtime STT)
+paramiko>=3.0.0         # SSH client for robot audio fallback
+
+# SDK Build Dependencies
+pybind11>=2.11.0        # Python bindings for C++ SDK
+pybind11-stubgen>=2.0   # Generate type stubs
+
+# Booster SDK (install separately from development/legacy/sdk)
+# See week1/plan.md for installation steps
+# 1. cd development/legacy/sdk
+# 2. sudo ./install.sh
+# 3. pip install pybind11 pybind11-stubgen
+# 4. mkdir build && cd build
+# 5. cmake .. -DBUILD_PYTHON_BINDING=on
+# 6. make && sudo make install
