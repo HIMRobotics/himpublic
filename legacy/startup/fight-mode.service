@@ -1,0 +1,13 @@
+[Unit]
+Description=Fight Mode Controller
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/booster/Desktop/tuya-finger-bot/.venv/bin/python -m /home/booster/Desktop/booster/booster_python_client
+WorkingDirectory=/home/booster/Desktop/booster
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target
