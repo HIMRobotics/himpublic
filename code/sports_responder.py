@@ -61,7 +61,7 @@ class ConversationMessage:
 @dataclass
 class ResponderConfig:
     """Configuration for the sports responder."""
-    model: str = "gpt-4-turbo-preview"
+    model: str = "gpt-4o"
     max_tokens: int = 50  # Keep responses short
     temperature: float = 0.9  # More personality variation
     max_history: int = 10  # Keep last N messages for context
