@@ -48,37 +48,36 @@ If SSH logs you in, you're good — type `exit` and continue to Step 1.
 
 ---
 
-## Step 1 — Get the code on the robot
+## Step 1 — Get the code onto the robot (SIMPLEST WAY)
 
-**If the robot already has this repo:** skip to Step 2.
-
-**Otherwise, from your laptop** (in the `himpublic` folder):
+Log into the robot, then clone the repo **on the robot**. No copying from the laptop,
+no scp — just two commands.
 
 ```bash
-cd k1_boxing_kit
-./deploy.sh booster@192.168.10.102
+ssh booster@192.168.10.102        # password: 123456 (won't show as you type)
 ```
 
-(Use the Wi-Fi IP from the app instead of `192.168.10.102` if you're not on
-Ethernet.)
+Now you're ON the robot. Get the code:
 
-**It will ask for the robot's password (default `123456`).** The password does
-**not** show as you type — that's normal, just type it and press Enter. If it seems
-stuck, it's waiting for the password. On the first connection it may ask
-`Are you sure you want to continue connecting (yes/no)?` — type `yes`.
+```bash
+git clone https://github.com/HIMRobotics/himpublic.git
+cd himpublic/k1_boxing_kit
+```
+
+Already cloned before? Just update it instead:
+
+```bash
+cd ~/himpublic && git pull && cd k1_boxing_kit
+```
+
+That's it — go to Step 2.
+
+> Don't use `deploy.sh` unless the robot has **no internet**. `scp` is what was
+> hanging on you. If you must copy from the laptop, see the Appendix at the bottom.
 
 ---
 
-## Step 2 — Log into the robot and go to the kit
-
-```bash
-ssh booster@192.168.10.102        # password: 123456
-cd ~/k1_boxing_kit
-```
-
----
-
-## Step 3 — Check the joints move the right arms (no punching yet)
+## Step 2 — Check the joints move the right arms (no punching yet)
 
 This is **read-only** — nothing moves on its own.
 
@@ -96,7 +95,7 @@ This is **read-only** — nothing moves on its own.
 
 ---
 
-## Step 4 — Box!
+## Step 3 — Box!
 
 ```bash
 ./run.sh fight
@@ -166,3 +165,25 @@ R-shoulder-roll, R-elbow-pitch, R-elbow-yaw)`.
 - Did `verify` show DEFAULT or MOTION_CAPTURE indices?
 - Which punches looked good / bad?
 - Any errors (copy the message).
+
+---
+
+## Appendix — copy from laptop instead (only if robot has no internet)
+
+Prefer Step 1 (clone on the robot). Use this only if the robot can't reach GitHub.
+
+From your **laptop**, in the `himpublic/k1_boxing_kit` folder:
+
+```bash
+./deploy.sh booster@192.168.10.102
+```
+
+`scp` will ask for the robot password (`123456`) — it won't show as you type.
+
+**If it hangs with no password prompt at all**, the laptop can't reach the robot
+(not a password problem). Fix the connection first with Step 0's `ping` test, then
+retry. As a one-time key setup to avoid password prompts entirely:
+
+```bash
+ssh-copy-id booster@192.168.10.102   # type 123456 once; future connects are passwordless
+```
