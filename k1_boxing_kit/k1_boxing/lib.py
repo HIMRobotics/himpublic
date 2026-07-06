@@ -94,20 +94,50 @@ class BoosterLowLevelController:
         self.low_state_msg = msg
 
     # ---- Modes -----------------------------------------------------------
-    def enable_upper_body_usage(self) -> None:
-        """Keep legs balancing (kWalking) while enabling custom arm control."""
+    def _change_mode(self, mode, label: str) -> int:
+        """ChangeMode with the return code logged (0 = success)."""
+        ret = self.loco_client.ChangeMode(mode)
+        if ret == 0:
+            logger.info("  %s: OK", label)
+        else:
+            logger.error("  %s: FAILED (error code %s)", label, ret)
+        return ret
+
+    def enable_upper_body_usage(self, already_standing: bool = False) -> None:
+        """Get the robot standing/balancing, then enable custom arm control.
+
+        Sequence mirrors the back-panel buttons: STAND (kPrepare) -> WALK (kWalking).
+        If `already_standing` is True (you stood it via the buttons/app), we skip the
+        mode changes and only turn on arm control.
+        """
         from booster_robotics_sdk_python import RobotMode
 
-        logger.info("Preparing robot...")
-        self.loco_client.ChangeMode(RobotMode.kPrepare)
-        time.sleep(2)
-        logger.info("Entering walking (balance) mode...")
-        self.loco_client.ChangeMode(RobotMode.kWalking)
-        time.sleep(2)
+        if not already_standing:
+            logger.info("Standing up: prepare (ready) mode...")
+            self._change_mode(RobotMode.kPrepare, "kPrepare")
+            time.sleep(4)  # give it time to stand to the ready posture
+            logger.info("Entering walking (balance) mode...")
+            self._change_mode(RobotMode.kWalking, "kWalking")
+            time.sleep(3)
+
         logger.info("Enabling upper-body custom control...")
         self.loco_client.UpperBodyCustomControl(True)
         time.sleep(1)
+        self.log_current_mode()
         logger.info("Upper-body control ready. Legs remain balanced.")
+
+    def log_current_mode(self) -> None:
+        """Query and log the robot's current mode (best-effort)."""
+        try:
+            from booster_robotics_sdk_python import GetModeResponse
+
+            resp = GetModeResponse()
+            if self.loco_client.GetMode(resp) == 0:
+                logger.info("Current robot mode: %s", getattr(resp, "mode", "?"))
+            else:
+                logger.warning("Could not read current mode.")
+        except Exception as exc:
+            logger.warning("GetMode not available: %s", exc)
 
     def damp(self) -> None:
         """Put the robot into damping mode (safe, compliant)."""

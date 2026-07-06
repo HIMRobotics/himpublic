@@ -130,6 +130,18 @@ This is **read-only** — nothing moves on its own.
 
 ## If something looks wrong
 
+- **He's NOT standing when you start fight mode** → the SDK stand-up was likely
+  refused (the robot often only stands from the physical buttons). Do this instead:
+  1. Ctrl-C to stop.
+  2. On Adam's **back panel**, press **STAND** (ready), then **WLAK** (walking).
+     He should be upright and balancing. (Or stand him via the Booster app.)
+  3. Now run the "already standing" version — it skips the auto stand-up and just
+     turns on arm control:
+     ```bash
+     ./run.sh fight-standing
+     ```
+  Watch the log lines: `kPrepare: OK/FAILED`, `kWalking: OK/FAILED`, and
+  `Current robot mode: ...` tell you exactly what the robot accepted.
 - **A pose looks awkward / too far** → that's expected; poses were recorded on the
   T1. Stop (Ctrl-C) and use the **Backup plan** below to record K1 poses by hand.
 - **"Booster SDK not installed"** → the SDK isn't built on this robot. Build it,

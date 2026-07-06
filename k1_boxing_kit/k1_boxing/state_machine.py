@@ -44,6 +44,7 @@ class FightingStateMachine:
         speed: SpeedType = "slow",
         time_gap_s: float = 0.05,
         enable_motion: bool = True,
+        already_standing: bool = False,
     ):
         self.booster = booster
         self.speed = speed
@@ -54,7 +55,7 @@ class FightingStateMachine:
 
         if enable_motion:
             # Legs stay balanced (kWalking); only the arms become custom-controlled.
-            self.booster.enable_upper_body_usage()
+            self.booster.enable_upper_body_usage(already_standing=already_standing)
             logger.info("Assuming guard stance...")
             self.booster.send_command(
                 [actions.FIGHT_STANCE], speed=self.speed, time_gap_s=0.2

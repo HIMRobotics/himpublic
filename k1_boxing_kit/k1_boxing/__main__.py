@@ -73,6 +73,11 @@ def main() -> None:
     parser.add_argument(
         "--yes", action="store_true", help="Skip the interactive safety confirmation."
     )
+    parser.add_argument(
+        "--already-standing", action="store_true",
+        help="Robot is already standing/balancing (you used the STAND+WALK buttons "
+             "or app). Skips the auto stand-up; only enables arm control.",
+    )
     args = parser.parse_args()
 
     robot = BoosterLowLevelController(network_interface=args.network_interface)
@@ -109,7 +114,10 @@ def main() -> None:
     try:
         # NOTE: this stands the robot up and starts balancing
         # (DAMP -> kPrepare -> kWalking), then takes the guard pose. Be ready.
-        sm = FightingStateMachine(robot, speed=args.speed, time_gap_s=0.05)
+        sm = FightingStateMachine(
+            robot, speed=args.speed, time_gap_s=0.05,
+            already_standing=args.already_standing,
+        )
 
         sub = B1RemoteControllerStateSubscriber(sm.on_remote)
         sub.InitChannel()
