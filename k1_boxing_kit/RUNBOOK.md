@@ -20,7 +20,8 @@ cd himpublic/k1_boxing_kit
 ./run.sh fight-standing # 3) box! Y=right punch X=left punch B=uppercut A=block Dpad-up=victory
 ```
 
-Ctrl-C anytime = stop + go limp (safe). If a step fails, it prints what to fix.
+Ctrl-C anytime = stop (he returns to guard and stays standing in ready mode).
+If a step fails, it prints what to fix.
 Full detail + troubleshooting below.
 
 ---
@@ -31,7 +32,9 @@ Full detail + troubleshooting below.
 - **Spot the robot** (hold it / have it supported) for the first runs.
 - Start the robot in **DAMP mode** before you begin.
 - Always run **slow** the first time (this kit defaults to slow).
-- To stop instantly: press **Ctrl-C** in the terminal. The robot will go limp (damp).
+- To stop: press **Ctrl-C**. He returns to guard and **stays standing (ready mode),
+  not limp**. For an EMERGENCY limp, press **LT + BACK** on the controller, or the
+  **F1** button on his back panel.
 
 The legs stay on the robot's own balance controller — this kit only moves the arms.
 
@@ -175,11 +178,12 @@ Handy built-in button combos (from Booster):
   - **B** = right uppercut (RB also, if it works)
   - **A** = block on/off
   - **D-pad Up** = victory pose
-- Press **Ctrl-C** when done. It returns to guard, then **damps** the robot
-  (goes limp/safe). Always exit this way.
+- Press **Ctrl-C** when done. It returns to guard, then leaves him **standing in
+  ready mode (not limp)**. Always exit this way. (Add `--damp-on-exit` only if he's
+  supported and you want him to go limp instead.)
 
 ### Robot modes (what they mean)
-- **DAMP** = limp/safe, no stiffness. Start here; you end here.
+- **DAMP** = limp, no stiffness. Start here. (Ctrl-C no longer ends in DAMP.)
 - **prepare / walking** = robot is stiff and balancing on its legs. This kit only
   moves the **arms** while the legs balance themselves.
 

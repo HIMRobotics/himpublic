@@ -182,6 +182,11 @@ def main() -> None:
         help="Robot is already standing/balancing (you used the STAND+WALK buttons "
              "or app). Skips the auto stand-up; only enables arm control.",
     )
+    parser.add_argument(
+        "--damp-on-exit", action="store_true",
+        help="On exit, go limp (DAMP) instead of staying upright in ready mode. "
+             "Only use this if the robot is supported/hanging.",
+    )
     args = parser.parse_args()
 
     robot = BoosterLowLevelController(network_interface=args.network_interface)
@@ -240,7 +245,7 @@ def main() -> None:
         logger.info("Ctrl-C to stop.")
         stop.wait()
     finally:
-        logger.info("Stopping - returning to guard and damping.")
+        logger.info("Stopping - returning to guard...")
         # Stop remote input FIRST so no new punch fires during shutdown.
         if sub is not None:
             try:
@@ -249,9 +254,14 @@ def main() -> None:
                 pass
         if sm is not None:
             sm.return_to_guard()
-        robot.damp()  # always leave the robot limp/safe
+        # Default: stay upright in ready mode (not limp). Opt in to damp if supported.
+        if args.damp_on_exit:
+            robot.damp()
+            logger.info("Stopped. Robot is DAMPED (limp) - make sure it's supported.")
+        else:
+            robot.set_ready()
+            logger.info("Stopped. Robot is in READY mode (still standing).")
         robot.close()
-        logger.info("Stopped cleanly. Robot is damped.")
 
 
 if __name__ == "__main__":

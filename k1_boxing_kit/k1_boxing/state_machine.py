@@ -80,29 +80,19 @@ class FightingStateMachine:
             logger.error("Action failed: %s", exc)
 
     def on_event(self, event: RobotEvent) -> None:
-        if self.state == RobotState.FIGHT_STANCE:
-            if event == RobotEvent.BLOCK:
-                self._action(actions.FIGHT_POSE_TO_BLOCK)
-                self.state = RobotState.BLOCK_STANCE
-            elif event == RobotEvent.LEFT_PUNCH:
-                self._action(actions.LEFT_PUNCH)
-            elif event == RobotEvent.RIGHT_PUNCH:
-                self._action(actions.RIGHT_PUNCH)
-            elif event == RobotEvent.RIGHT_UPPERCUT:
-                self._action(actions.RIGHT_UPPERCUT)
-            elif event == RobotEvent.VICTORY_POSE:
-                self._action(actions.VICTORY_ANIMATION, "slow", 0.2)
-            else:
-                logger.info("Can't %s while fighting!", event.value)
-
-        elif self.state == RobotState.BLOCK_STANCE:
-            if event == RobotEvent.BLOCK:
-                self._action(actions.BLOCK_TO_FIGHT_POSE)
-                self.state = RobotState.FIGHT_STANCE
-            elif event == RobotEvent.VICTORY_POSE:
-                self._action(actions.VICTORY_ANIMATION, "slow", 0.2)
-            else:
-                logger.info("Can't %s while blocking!", event.value)
+        # Stateless: every move works at any time and returns to the guard stance.
+        if event == RobotEvent.LEFT_PUNCH:
+            self._action(actions.LEFT_PUNCH)
+        elif event == RobotEvent.RIGHT_PUNCH:
+            self._action(actions.RIGHT_PUNCH)
+        elif event == RobotEvent.RIGHT_UPPERCUT:
+            self._action(actions.RIGHT_UPPERCUT)
+        elif event == RobotEvent.BLOCK:
+            # Momentary block: raise guard, then drop back to fight stance.
+            self._action(actions.FIGHT_POSE_TO_BLOCK)
+            self._action(actions.BLOCK_TO_FIGHT_POSE)
+        elif event == RobotEvent.VICTORY_POSE:
+            self._action(actions.VICTORY_ANIMATION, "slow", 0.2)
 
     # Each move can be triggered by ANY of several buttons (checked in this order).
     # NOTE: on the Booster remote the triggers/bumpers (rt/lt/rb) often DON'T register
@@ -146,9 +136,6 @@ class FightingStateMachine:
     def return_to_guard(self) -> None:
         """Best-effort return to the neutral fight stance."""
         try:
-            if self.state == RobotState.BLOCK_STANCE:
-                self._action(actions.BLOCK_TO_FIGHT_POSE)
-                self.state = RobotState.FIGHT_STANCE
             self.booster.send_command(
                 [actions.FIGHT_STANCE], speed="slow", time_gap_s=0.2
             )

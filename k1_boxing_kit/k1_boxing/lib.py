@@ -140,7 +140,7 @@ class BoosterLowLevelController:
             logger.warning("GetMode not available: %s", exc)
 
     def damp(self) -> None:
-        """Put the robot into damping mode (safe, compliant)."""
+        """Put the robot into damping mode (limp/compliant)."""
         try:
             from booster_robotics_sdk_python import RobotMode
 
@@ -148,6 +148,16 @@ class BoosterLowLevelController:
             self.loco_client.ChangeMode(RobotMode.kDamping)
         except Exception as exc:
             logger.error("Failed to set damping mode: %s", exc)
+
+    def set_ready(self) -> None:
+        """Leave the robot standing in PREP (ready) mode - stiff, not limp."""
+        try:
+            from booster_robotics_sdk_python import RobotMode
+
+            logger.info("Setting ready (prepare) mode - staying upright...")
+            self._change_mode(RobotMode.kPrepare, "kPrepare")
+        except Exception as exc:
+            logger.error("Failed to set ready mode: %s", exc)
 
     # ---- Commands --------------------------------------------------------
     def _send(self) -> None:
