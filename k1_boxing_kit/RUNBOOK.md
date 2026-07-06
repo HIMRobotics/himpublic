@@ -212,14 +212,23 @@ cd ~/himpublic/k1_boxing_kit
 
 **This is safe and fully reversible.** It only adds ONE file
 (`/etc/systemd/system/k1-boxing.service`) and does **not** touch any of Booster's own
-code or config. It also **waits** until you stand Adam up before it does anything, and
-it will **not** auto-restart/loop if something goes wrong (it just stops).
+code or config. It runs a background **listener that does nothing** until you press a
+button combo — the robot behaves 100% normally until then. It will **not**
+auto-restart/loop if something goes wrong (it just stops).
 
-After that, for every demo:
+After that, for every demo (NO laptop, NO SSH):
 1. Power on Adam, wait for the boot tone.
-2. Stand him up: **STAND** then **WLAK** on his back panel.
-3. Boxing activates automatically (it waits for him to be standing first) — just use
-   the remote. No laptop, no SSH.
+2. Stand him up: **LT+START** (or STAND button), then **RT+A** (or WLAK button).
+3. **Press START + BACK on the remote to START boxing.** He takes the guard stance;
+   now Y/X/B/A/D-pad-up throw punches.
+4. **Press START + BACK again to STOP boxing.** Arms release and the robot is back to
+   normal — all his other functions work again.
+
+You can toggle boxing on/off as many times as you want with START+BACK. When it's
+OFF, nothing about the robot is affected.
+
+> If START+BACK doesn't toggle on your remote, tell us — it's a one-line change in
+> `k1_boxing/state_machine.py` (`TOGGLE_BUTTONS`).
 
 ### Kill it / remove it (save these)
 - **Stop right now:** on the controller press **LT + BACK** (DAMP) or the **F1**

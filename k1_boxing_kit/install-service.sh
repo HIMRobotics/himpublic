@@ -42,7 +42,7 @@ After=network.target
 Type=simple
 User=$USER_NAME
 WorkingDirectory=$DIR
-ExecStart=$PY -m k1_boxing --auto
+ExecStart=$PY -m k1_boxing --remote-trigger
 Restart=no
 
 [Install]
@@ -54,8 +54,9 @@ sudo systemctl enable k1-boxing.service
 sudo systemctl restart k1-boxing.service
 
 echo ""
-echo "Done. Boxing auto-starts on boot (and is running now)."
-echo "It WAITS until you stand Adam up (STAND then WLAK), then activates - safe."
+echo "Done. A background listener auto-starts on boot (and is running now)."
+echo "The robot stays NORMAL until you press START+BACK on the remote to start boxing."
+echo "Press START+BACK again to stop boxing (arms released, robot back to normal)."
 echo ""
 echo "=== HOW TO STOP / REMOVE (save these) ==="
 echo "Stop now .............: sudo systemctl stop k1-boxing"

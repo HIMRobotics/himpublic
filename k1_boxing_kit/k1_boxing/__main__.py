@@ -18,7 +18,7 @@ import threading
 import time
 
 from .lib import BoosterLowLevelController
-from .state_machine import FightingStateMachine
+from .state_machine import FightingStateMachine, RemoteTriggeredController
 from .joints import DEFAULT_INDICES, USE_MOTION_CAPTURE_INDICES, ARM_JOINT_NAMES
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -158,6 +158,33 @@ def _verify_joints(robot: BoosterLowLevelController) -> None:
         print("\nDone verifying.")
 
 
+def _run_remote_trigger(robot: BoosterLowLevelController, args) -> None:
+    """Idle loop: START+BACK on the remote toggles boxing on/off. No SSH needed."""
+    from booster_robotics_sdk_python import B1RemoteControllerStateSubscriber
+
+    controller = RemoteTriggeredController(robot, speed=args.speed, time_gap_s=0.05)
+    sub = B1RemoteControllerStateSubscriber(controller.on_remote)
+    sub.InitChannel()
+
+    stop = threading.Event()
+    signal.signal(signal.SIGINT, lambda *_: stop.set())
+    signal.signal(signal.SIGTERM, lambda *_: stop.set())
+
+    logger.info("Remote-trigger mode ready. Robot is NORMAL until you toggle.")
+    logger.info("Stand him up (LT+START, then RT+A), then press START+BACK to start boxing.")
+    logger.info("Press START+BACK again to stop boxing. Ctrl-C to exit.")
+    try:
+        stop.wait()
+    finally:
+        try:
+            sub.CloseChannel()
+        except Exception:
+            pass
+        controller.shutdown()
+        robot.set_ready()
+        logger.info("Exited remote-trigger mode.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="K1 remote-controlled boxing")
     parser.add_argument("--speed", choices=("slow", "medium", "fast"), default="slow")
@@ -196,12 +223,19 @@ def main() -> None:
         help="Hands-free demo: wait until the robot is stood up, then activate boxing "
              "(implies --yes --already-standing --wait-standing). For the autostart service.",
     )
+    parser.add_argument(
+        "--remote-trigger", action="store_true",
+        help="Idle until you press START+BACK on the remote to toggle boxing on/off. "
+             "No SSH needed each time; robot stays normal until you toggle. (implies --yes)",
+    )
     args = parser.parse_args()
 
     if args.auto:
         args.yes = True
         args.already_standing = True
         args.wait_standing = True
+    if args.remote_trigger:
+        args.yes = True
 
     robot = BoosterLowLevelController(network_interface=args.network_interface)
 
@@ -231,6 +265,11 @@ def main() -> None:
 
     if not _confirm(args.yes):
         logger.info("Aborted by user.")
+        robot.close()
+        return
+
+    if args.remote_trigger:
+        _run_remote_trigger(robot, args)
         robot.close()
         return
 

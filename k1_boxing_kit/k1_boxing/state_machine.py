@@ -141,3 +141,75 @@ class FightingStateMachine:
             )
         except Exception as exc:
             logger.error("Return-to-guard failed: %s", exc)
+
+
+class RemoteTriggeredController:
+    """Idle until you press a chord on the remote; then boxing turns ON/OFF.
+
+    This is the hands-free-but-not-automatic option: a background service can run
+    this and do NOTHING until you deliberately toggle boxing with the remote. When
+    OFF, the robot behaves 100% normally (arms released), so other features work.
+
+    Toggle chord: START + BACK (both at once). Change TOGGLE_BUTTONS below if needed.
+    While ON: Y=right punch, X=left punch, B=uppercut, A=block, D-pad up=victory.
+    """
+
+    # Press ALL of these at once to toggle boxing on/off.
+    TOGGLE_BUTTONS = ("start", "back")
+
+    def __init__(
+        self,
+        booster: BoosterLowLevelController,
+        speed: SpeedType = "slow",
+        time_gap_s: float = 0.05,
+    ):
+        self.booster = booster
+        # enable_motion=False: we enable arm control only when toggled ON.
+        self.sm = FightingStateMachine(
+            booster, speed=speed, time_gap_s=time_gap_s, enable_motion=False
+        )
+        self.active = False
+        self._prev_chord = False
+        self._toggle_lock = threading.Lock()
+
+    def on_remote(self, rc) -> None:
+        """Runs in the SDK callback thread; must never raise."""
+        try:
+            chord = all(bool(getattr(rc, b, False)) for b in self.TOGGLE_BUTTONS)
+            if chord and not self._prev_chord:
+                self._toggle()
+            self._prev_chord = chord
+
+            # Only pass punches through while boxing is ON.
+            if self.active:
+                self.sm.on_remote(rc)
+        except Exception as exc:
+            logger.error("Remote handler error (ignored): %s", exc)
+
+    def _toggle(self) -> None:
+        with self._toggle_lock:
+            if not self.active:
+                if not self.booster.is_walking():
+                    logger.warning(
+                        "Stand the robot first (LT+START, then RT+A), then toggle again."
+                    )
+                    return
+                logger.info("BOXING ON")
+                self.booster.set_upper_body_control(True)
+                self.sm.return_to_guard()
+                self.active = True
+            else:
+                logger.info("BOXING OFF - releasing arms, robot back to normal.")
+                self.sm.return_to_guard()
+                self.booster.set_upper_body_control(False)
+                self.active = False
+
+    def shutdown(self) -> None:
+        """Release arm control if we're holding it."""
+        try:
+            if self.active:
+                self.sm.return_to_guard()
+                self.booster.set_upper_body_control(False)
+                self.active = False
+        except Exception as exc:
+            logger.error("Shutdown error: %s", exc)

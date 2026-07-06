@@ -171,6 +171,14 @@ class BoosterLowLevelController:
         except Exception as exc:
             logger.error("Failed to set damping mode: %s", exc)
 
+    def set_upper_body_control(self, on: bool) -> None:
+        """Turn custom arm control on/off (leaves the leg mode unchanged)."""
+        try:
+            self.loco_client.UpperBodyCustomControl(on)
+            logger.info("Upper-body custom control: %s", "ON" if on else "OFF")
+        except Exception as exc:
+            logger.error("Failed to set upper-body control: %s", exc)
+
     def set_ready(self) -> None:
         """Leave the robot standing in PREP (ready) mode - stiff, not limp."""
         try:

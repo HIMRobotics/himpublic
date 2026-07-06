@@ -7,6 +7,7 @@
 #   ./run.sh fight            # fight mode, slow speed (safe default)
 #   ./run.sh fight medium     # fight mode, medium speed (only after tuning!)
 #   ./run.sh fight-standing   # fight mode when Adam is ALREADY standing (buttons/app)
+#   ./run.sh trigger          # idle; START+BACK on the remote toggles boxing on/off
 #   ./run.sh capture NAME     # backup: record poses by hand (read-only, DAMP)
 #
 # Network interface defaults to 127.0.0.1 (running on the robot). Override with:
@@ -53,17 +54,21 @@ case "$MODE" in
     # Use when you already stood Adam up with the STAND + WALK buttons (or app).
     exec "$PY" -m k1_boxing --speed "$SPEED" --already-standing --network-interface "$IFACE"
     ;;
+  trigger)
+    # Idle until you press START+BACK on the remote to toggle boxing on/off.
+    exec "$PY" -m k1_boxing --remote-trigger --speed "$SPEED" --network-interface "$IFACE"
+    ;;
   capture)
     # Second arg is the pose name here (e.g. ./run.sh capture LEFT_PUNCH).
     exec "$PY" -m k1_boxing.capture --name "${2:-MY_POSE}" --network-interface "$IFACE"
     ;;
   -h|--help|help)
-    echo "Usage: ./run.sh [check|verify|remote|fight|fight-standing|capture] [slow|medium|fast | POSE_NAME]"
+    echo "Usage: ./run.sh [check|verify|remote|fight|fight-standing|trigger|capture] [slow|medium|fast | POSE_NAME]"
     echo "Start with:  ./run.sh check"
     ;;
   *)
     echo "Unknown command: $MODE"
-    echo "Usage: ./run.sh [check|verify|remote|fight|fight-standing|capture] [slow|medium|fast | POSE_NAME]"
+    echo "Usage: ./run.sh [check|verify|remote|fight|fight-standing|trigger|capture] [slow|medium|fast | POSE_NAME]"
     echo "Start with:  ./run.sh check"
     exit 1
     ;;
