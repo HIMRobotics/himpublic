@@ -159,6 +159,16 @@ class BoosterLowLevelController:
             raise RuntimeError("No LowState received; check network interface / wiring.")
         return stringify_q_values(self.low_state_msg.motor_state_serial, indices)
 
+    def read_low_state_values(self, indices: List[int], timeout_s: float = 10.0):
+        """Return the raw q (radians) at `indices` as a list of floats."""
+        deadline = time.time() + timeout_s
+        while self.low_state_msg is None and time.time() < deadline:
+            time.sleep(0.01)
+        if self.low_state_msg is None:
+            raise RuntimeError("No LowState received; check network interface / wiring.")
+        serial = self.low_state_msg.motor_state_serial
+        return [serial[i].q for i in indices]
+
     def close(self) -> None:
         try:
             if self.pub:

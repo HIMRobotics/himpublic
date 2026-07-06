@@ -91,7 +91,7 @@ This is **read-only** — nothing moves on its own.
 ## If something looks wrong
 
 - **A pose looks awkward / too far** → that's expected; poses were recorded on the
-  T1. Stop (Ctrl-C). We'll re-tune for the K1 (see "Tuning" below).
+  T1. Stop (Ctrl-C) and use the **Backup plan** below to record K1 poses by hand.
 - **"Booster SDK not installed"** → the SDK isn't built on this robot. Build it,
   then retry.
 - **"No LowState received"** → wrong network interface. Try:
@@ -100,14 +100,30 @@ This is **read-only** — nothing moves on its own.
 
 ---
 
-## Tuning (optional, later)
+## BACKUP PLAN — if the punches look wrong on the K1
 
-Punch angles live in `k1_boxing/actions.py` as 8 numbers per frame:
+The punches were recorded on the T1. If a pose is off (arm too far, awkward angle),
+record K1-native poses by hand. **This is read-only and safe — the robot stays in
+DAMP (limp), nothing is driven.**
+
+1. Put the robot in **DAMP** (limp).
+2. Record a punch, one keyframe at a time:
+
+```bash
+./run.sh capture LEFT_PUNCH
+```
+
+3. Move the arms by hand to each position and press **ENTER** to snapshot.
+   Do a few frames (start pose → mid → extended → back). Type `done` when finished.
+4. It prints a `LEFT_PUNCH = [ ... ]` block. **Copy it into `k1_boxing/actions.py`**,
+   replacing the matching sequence (put it above the `_as_dicts` section near the
+   bottom). Names you can record: `LEFT_PUNCH`, `RIGHT_PUNCH`, `RIGHT_UPPERCUT`,
+   `FIGHT_POSE_TO_BLOCK`, `BLOCK_TO_FIGHT_POSE`, `VICTORY_ANIMATION`.
+5. Re-run `./run.sh fight`.
+
+Reference — each frame is 8 numbers (radians):
 `(L-shoulder-pitch, L-shoulder-roll, L-elbow-pitch, L-elbow-yaw, R-shoulder-pitch,
-R-shoulder-roll, R-elbow-pitch, R-elbow-yaw)` in radians.
-
-Easiest way to get K1-perfect poses: record them by hand with
-`himpublic/code/motion_capture.py`, then paste the values into `actions.py`.
+R-shoulder-roll, R-elbow-pitch, R-elbow-yaw)`.
 
 ---
 
