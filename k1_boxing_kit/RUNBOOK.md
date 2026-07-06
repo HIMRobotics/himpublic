@@ -120,18 +120,41 @@ This is **read-only** — nothing moves on its own.
 
 ---
 
-## Step 2.5 — Check the remote is connected (no motion)
+## Step 2.5 — Connect the controller (do this if Adam ignores the remote)
 
-If punches don't trigger, the remote may not be paired to the robot. Test it:
+Adam listens to the Booster (XBOX-compatible) joystick. If he's not responding to it
+**at all**, it's almost always one of these — from Booster's own manual:
 
+1. **Controller must be in RECEIVER MODE — 3 LEDs solid ON.** This is Booster's
+   requirement. If you don't see 3 solid LEDs, it is NOT connected to the robot.
+   Power the controller on and put it in receiver mode (cycle its mode button until
+   the 3 LEDs are solid), per the controller's instructions.
+2. **Robot must be fully booted.** After power-on, wait ~1 minute until it plays the
+   prompt tone. It won't respond to the controller before that.
+
+### Prove the controller talks to the robot (Booster's built-in test)
+Press **LT + START** on the joystick.
+- **Adam stiffens into a ready posture (PREP mode)** → the controller IS connected.
+  You're good — go to Step 3.
+- **Nothing happens** → the controller is NOT connected. Fix receiver mode (3 LEDs)
+  and make sure he's booted, then try again.
+
+Handy built-in button combos (from Booster):
+- **LT + START** → PREP (ready / stand) mode
+- **RT + A** → WALK mode (only once he's standing in PREP)
+- **LT + BACK** → DAMP (limp)
+
+### Then confirm our software sees the buttons too
 ```bash
-./run.sh remote
+./run.sh remote        # press buttons; lines should appear. Ctrl-C when done.
 ```
+- **Lines appear** → great, boxing will get your button presses.
+- **Nothing appears even though LT+START worked** → tell us; we may need to point the
+  code at a different remote channel.
 
-Press buttons / move sticks on the Booster remote. You should see lines appear.
-- **Lines appear** → remote is connected. Ctrl-C and continue.
-- **Nothing appears** → the remote isn't connected. Turn the remote on and pair it
-  to the robot (via the Booster app / the robot's pairing procedure), then retry.
+> Note: while Adam runs his built-in program, some single buttons (like **A**) may
+> also trigger a default action (e.g. handshake). If a button does something
+> unexpected, tell us which button and we'll remap the punches.
 
 ---
 
