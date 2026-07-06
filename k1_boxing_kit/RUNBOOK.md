@@ -24,6 +24,9 @@ Ctrl-C anytime = stop (he returns to guard and stays standing in ready mode).
 If a step fails, it prints what to fix.
 Full detail + troubleshooting below.
 
+**Before the real demo, run the [Pre-Demo Rehearsal](#pre-demo-rehearsal-do-this-once-before-the-real-demo)**
+— record the K1 punches and do a full power-cycle test of the no-laptop flow.
+
 ---
 
 ## SAFETY — read this first (30 seconds)
@@ -249,6 +252,40 @@ OFF, nothing about the robot is affected.
 
 ---
 
+## Pre-Demo Rehearsal (do this once before the real demo)
+
+Two parts. Part 1 makes the punches look good on the K1. Part 2 rehearses the exact
+laptop-free flow you'll use at the demo, from a cold power-on.
+
+### Part 1 — Record the punches + test (with SSH, spotter on)
+1. SSH in and get the latest code:
+   ```bash
+   ssh booster@<ROBOT-IP>
+   cd ~/himpublic && git pull && cd k1_boxing_kit
+   ```
+2. `./run.sh check` — confirm data link + remote are OK.
+3. Record K1 punches (see **Appendix A**). Do at least `RIGHT_PUNCH`, `LEFT_PUNCH`,
+   `RIGHT_UPPERCUT` (add block + victory if you want). Paste each into `actions.py`.
+4. Stand him up: **LT+START**, then **RT+A**.
+5. `./run.sh fight-standing` and test **every** button (Y / X / B / A / D-pad up).
+   Tune poses until they look good. Ctrl-C when happy.
+
+### Part 2 — Full power-cycle rehearsal (exactly like the demo, NO laptop)
+1. Install the autostart service once (if not already): `./install-service.sh`.
+2. **Power Adam fully OFF, then ON** — pretend you just arrived at the demo.
+3. Wait ~1 min for the boot tone. **Do not touch the laptop from here.**
+4. Put the controller in receiver mode (3 solid LEDs). Stand him: **LT+START**,
+   then **RT+A**.
+5. Press **START + BACK** → boxing turns on (guard stance). Throw a few punches.
+6. Press **START + BACK** → boxing off; check his normal functions still work.
+7. Power cycle one more time and repeat 3–6 to be sure it's repeatable.
+
+If Part 2 works with the laptop closed, you're demo-ready. If any step fails, that's
+the exact thing to fix — and you can always fall back to **Level 1** (SSH once, run
+`./run.sh fight-standing`, leave it open).
+
+---
+
 ## If something looks wrong
 
 - **He's NOT standing when you start fight mode** → the SDK stand-up was likely
@@ -263,40 +300,13 @@ OFF, nothing about the robot is affected.
      ```
   Watch the log lines: `kPrepare: OK/FAILED`, `kWalking: OK/FAILED`, and
   `Current robot mode: ...` tell you exactly what the robot accepted.
-- **A pose looks awkward / too far** → that's expected; poses were recorded on the
-  T1. Stop (Ctrl-C) and use the **Backup plan** below to record K1 poses by hand.
+- **A pose looks awkward / too far** → expected; poses were recorded on the T1.
+  Re-record them on the K1 — see **Appendix A — Record K1 punches**.
 - **"Booster SDK not installed"** → the SDK isn't built on this robot. Build it,
   then retry.
 - **"No LowState received"** → wrong network interface. Try:
   `IFACE=<interface> ./run.sh verify`
 - **Robot doesn't balance / drifts** → Ctrl-C immediately, put it back in DAMP.
-
----
-
-## BACKUP PLAN — if the punches look wrong on the K1
-
-The punches were recorded on the T1. If a pose is off (arm too far, awkward angle),
-record K1-native poses by hand. **This is read-only and safe — the robot stays in
-DAMP (limp), nothing is driven.**
-
-1. Put the robot in **DAMP** (limp).
-2. Record a punch, one keyframe at a time:
-
-```bash
-./run.sh capture LEFT_PUNCH
-```
-
-3. Move the arms by hand to each position and press **ENTER** to snapshot.
-   Do a few frames (start pose → mid → extended → back). Type `done` when finished.
-4. It prints a `LEFT_PUNCH = [ ... ]` block. **Copy it into `k1_boxing/actions.py`**,
-   replacing the matching sequence (put it above the `_as_dicts` section near the
-   bottom). Names you can record: `LEFT_PUNCH`, `RIGHT_PUNCH`, `RIGHT_UPPERCUT`,
-   `FIGHT_POSE_TO_BLOCK`, `BLOCK_TO_FIGHT_POSE`, `VICTORY_ANIMATION`.
-5. Re-run `./run.sh fight`.
-
-Reference — each frame is 8 numbers (radians):
-`(L-shoulder-pitch, L-shoulder-roll, L-elbow-pitch, L-elbow-yaw, R-shoulder-pitch,
-R-shoulder-roll, R-elbow-pitch, R-elbow-yaw)`.
 
 ---
 
@@ -308,7 +318,39 @@ R-shoulder-roll, R-elbow-pitch, R-elbow-yaw)`.
 
 ---
 
-## Appendix — copy from laptop instead (only if robot has no internet)
+## Appendix A — Record K1 punches (recommended)
+
+The built-in punches were recorded on the **T1**, so they look off on the K1. Record
+K1-native poses by hand. **This is read-only and safe — the robot stays in DAMP
+(limp), nothing is driven while recording.**
+
+1. Put the robot in **DAMP** (limp).
+2. Record a punch, one keyframe at a time:
+
+```bash
+./run.sh capture RIGHT_PUNCH
+```
+
+3. Move the arms by hand to each position and press **ENTER** to snapshot.
+   Do a few frames (guard → mid → extended → back). Type `done` when finished.
+4. It prints a `RIGHT_PUNCH = [ ... ]` block. **Copy it into `k1_boxing/actions.py`**,
+   replacing the matching sequence (put it above the `_as_dicts` section near the
+   bottom).
+5. Repeat for the moves you want. Names to record:
+   `RIGHT_PUNCH`, `LEFT_PUNCH`, `RIGHT_UPPERCUT`, `FIGHT_POSE_TO_BLOCK`,
+   `BLOCK_TO_FIGHT_POSE`, `VICTORY_ANIMATION`.
+6. Test: stand him up, then `./run.sh fight-standing`.
+
+Reference — each frame is 8 numbers (radians):
+`(L-shoulder-pitch, L-shoulder-roll, L-elbow-pitch, L-elbow-yaw, R-shoulder-pitch,
+R-shoulder-roll, R-elbow-pitch, R-elbow-yaw)`.
+
+> Tip: `FIGHT_POSE_TO_BLOCK` and `BLOCK_TO_FIGHT_POSE` are reverses of each other —
+> record the block, then enter the same frames in reverse for the recovery.
+
+---
+
+## Appendix B — copy from laptop instead (only if robot has no internet)
 
 Prefer Step 1 (clone on the robot). Use this only if the robot can't reach GitHub.
 
