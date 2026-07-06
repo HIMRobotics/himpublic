@@ -236,7 +236,7 @@ def main() -> None:
         sub = B1RemoteControllerStateSubscriber(sm.on_remote)
         sub.InitChannel()
 
-        logger.info("Ready. RT=right punch  RB=right uppercut  LT=left punch  A=block  B=victory")
+        logger.info("Ready. Y=right punch  X=left punch  B=uppercut  A=block  D-pad up=victory")
         logger.info("Ctrl-C to stop.")
         stop.wait()
     finally:

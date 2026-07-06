@@ -17,7 +17,7 @@ cd himpublic/k1_boxing_kit
 ./run.sh check          # 1) confirms link + remote are working (nothing moves)
 ./run.sh verify         # 2) confirm arm joints (move arms by hand)
 # stand Adam: press STAND then WLAK on his back panel
-./run.sh fight-standing # 3) box! RT/LT punch, RB uppercut, A block, B victory
+./run.sh fight-standing # 3) box! Y=right punch X=left punch B=uppercut A=block Dpad-up=victory
 ```
 
 Ctrl-C anytime = stop + go limp (safe). If a step fails, it prints what to fix.
@@ -168,12 +168,13 @@ Handy built-in button combos (from Booster):
 - **The robot will STAND UP and start balancing, then raise its fists.**
   Mode sequence: `DAMP → prepare → walking` (legs balance) + arm control on.
   **Keep hands on it for this part.**
-- Use the **remote**:
-  - **RT** = right punch
-  - **LT** = left punch
-  - **RB** = right uppercut
-  - **A**  = block on/off
-  - **B**  = victory pose
+- Use the **remote** (face buttons + D-pad — the triggers/bumpers often don't
+  register on this controller, so we use the buttons that do):
+  - **Y** = right punch   (RT also, if it works)
+  - **X** = left punch    (LT also, if it works)
+  - **B** = right uppercut (RB also, if it works)
+  - **A** = block on/off
+  - **D-pad Up** = victory pose
 - Press **Ctrl-C** when done. It returns to guard, then **damps** the robot
   (goes limp/safe). Always exit this way.
 

@@ -52,6 +52,9 @@ class FightingStateMachine:
         self.state = RobotState.FIGHT_STANCE
         # Ensures only one move runs at a time (drops overlapping button presses).
         self._action_lock = threading.Lock()
+        # Track every candidate button for rising-edge detection (press = False->True).
+        names = {n for buttons, _ in self._BUTTON_EVENTS for n in buttons}
+        self._prev = {n: False for n in names}
 
         if enable_motion:
             # Legs stay balanced (kWalking); only the arms become custom-controlled.
@@ -101,29 +104,40 @@ class FightingStateMachine:
             else:
                 logger.info("Can't %s while blocking!", event.value)
 
-    def on_remote(self, rc) -> None:
-        """Map remote button-down edges to fight events (one move at a time).
+    # Each move can be triggered by ANY of several buttons (checked in this order).
+    # NOTE: on the Booster remote the triggers/bumpers (rt/lt/rb) often DON'T register
+    # as buttons, so each move also has a face-button / D-pad fallback that does work.
+    _BUTTON_EVENTS = (
+        (("rt", "y"), RobotEvent.RIGHT_PUNCH),       # Y (or RT)
+        (("lt", "x"), RobotEvent.LEFT_PUNCH),        # X (or LT)
+        (("rb", "b"), RobotEvent.RIGHT_UPPERCUT),    # B (or RB)
+        (("a",), RobotEvent.BLOCK),                  # A
+        (("hat_u", "start"), RobotEvent.VICTORY_POSE),  # D-pad up
+    )
 
-        Runs in the SDK's callback thread, so it must never raise.
+    def on_remote(self, rc) -> None:
+        """Fire a move on each button PRESS (rising edge).
+
+        We detect edges ourselves instead of trusting one specific event code, so it
+        works regardless of how the remote reports events. Runs in the SDK callback
+        thread, so it must never raise.
         """
         try:
-            if rc.event != EVENT_BTN_DN:
+            # Read current states defensively (missing attrs -> False).
+            cur = {name: bool(getattr(rc, name, False)) for name in self._prev}
+            newly_pressed = {n for n in cur if cur[n] and not self._prev[n]}
+            self._prev = cur
+
+            if not newly_pressed:
                 return
             # Drop presses that arrive while a move is still playing.
             if not self._action_lock.acquire(blocking=False):
-                logger.info("Busy with a move - ignoring input")
                 return
             try:
-                if rc.rt:
-                    self.on_event(RobotEvent.RIGHT_PUNCH)
-                elif rc.rb:
-                    self.on_event(RobotEvent.RIGHT_UPPERCUT)
-                elif rc.lt:
-                    self.on_event(RobotEvent.LEFT_PUNCH)
-                elif rc.a:
-                    self.on_event(RobotEvent.BLOCK)
-                elif rc.b:
-                    self.on_event(RobotEvent.VICTORY_POSE)
+                for buttons, event in self._BUTTON_EVENTS:
+                    if newly_pressed.intersection(buttons):
+                        self.on_event(event)
+                        break
             finally:
                 self._action_lock.release()
         except Exception as exc:
