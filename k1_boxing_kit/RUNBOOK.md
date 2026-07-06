@@ -270,6 +270,39 @@ laptop-free flow you'll use at the demo, from a cold power-on.
 5. `./run.sh fight-standing` and test **every** button (Y / X / B / A / D-pad up).
    Tune poses until they look good. Ctrl-C when happy.
 
+### Fast debug loop (NO power cycle) — do this first
+
+Power cycles are slow. You can test almost everything over SSH, because
+`./run.sh trigger` runs the **exact same thing the boot service runs**
+(`--remote-trigger`). So iterate here first; only power-cycle at the very end.
+
+Fastest checks, in order (each is instant / read-only unless noted):
+
+1. **Do the toggle buttons even register?** (the main unknown)
+   ```bash
+   ./run.sh remote        # press START, then BACK, then both together
+   ```
+   You should see `start` and `back` in the printed `buttons=[...]`. If they never
+   show up, START+BACK can't work — tell us and we'll switch the combo (one line).
+2. **Link + remote health:** `./run.sh check`
+3. **Test the real toggle flow by hand (no service, no reboot):**
+   ```bash
+   # stand him first: LT+START, then RT+A
+   ./run.sh trigger
+   ```
+   Press **START+BACK** → boxing on; throw punches; **START+BACK** → off. This is
+   identical to what happens after boot. Ctrl-C to stop, tweak, re-run — fast loop.
+4. **Test the installed service without rebooting:**
+   ```bash
+   sudo systemctl restart k1-boxing      # same as a boot, minus the power cycle
+   journalctl -u k1-boxing -f            # watch it; press START+BACK; Ctrl-C to stop watching
+   ```
+
+IMPORTANT: only ONE listener at a time. If the service is running, stop it before
+`./run.sh trigger` (`sudo systemctl stop k1-boxing`), or the remote toggles twice.
+
+Once steps 1–4 look good, do the single power-cycle test below to confirm autostart.
+
 ### Part 2 — Full power-cycle rehearsal (exactly like the demo, NO laptop)
 1. Install the autostart service once (if not already): `./install-service.sh`.
 2. **Power Adam fully OFF, then ON** — pretend you just arrived at the demo.
