@@ -19,30 +19,37 @@ The legs stay on the robot's own balance controller — this kit only moves the 
 
 ---
 
-## Step 0 — Test the connection first (SSH + IP)
+## Step 0 — Find the robot's IP and test the connection
 
 Do this before anything else. Nothing on the robot moves here.
+Everywhere below, replace `<ROBOT-IP>` with Adam's real IP.
 
-**Wired (Ethernet) — recommended for the demo:**
-- Robot IP is `192.168.10.102`.
-- Set your laptop's wired network to a static IP: address `192.168.10.10`,
-  netmask `255.255.255.0`, gateway `192.168.10.1`.
+### Find `<ROBOT-IP>`
+Try these in order — the app is easiest:
 
-**Wi-Fi:** the IP is whatever the network assigns — find it in the Booster app.
-Use that IP below instead of `192.168.10.102`.
+1. **Booster app (best):** connect to the robot, open the control/settings page —
+   it shows the robot's current IP.
+2. **Scan from your laptop** (same network):
+   ```bash
+   arp -a                      # look for the robot entry
+   # or, if you have nmap (use YOUR subnet):
+   nmap -sn 192.168.1.0/24
+   ```
+3. **Wired default (only if you set up the static Ethernet link):** `192.168.10.102`
+   with your laptop at static IP `192.168.10.10` / `255.255.255.0` / gw `192.168.10.1`.
+   (This is just Booster's default — it is probably NOT your Wi-Fi IP.)
 
-Then from your laptop:
-
+### Test it
 ```bash
-ping 192.168.10.102              # should get replies (Ctrl-C to stop)
-ssh booster@192.168.10.102       # password: 123456
+ping <ROBOT-IP>                 # should get replies (Ctrl-C to stop)
+ssh booster@<ROBOT-IP>          # password: 123456 (won't show as you type)
 ```
 
-If SSH logs you in, you're good — type `exit` and continue to Step 1.
+If SSH logs you in, you're good — continue to Step 1 (you're already on the robot).
 
 **If it fails:**
-- `Request timeout` / no ping → wrong IP, cable not seated, or laptop not on the
-  `192.168.10.x` subnet (re-check the static IP above). On Wi-Fi, re-check the app.
+- `Request timeout` / no ping → wrong IP, or laptop and robot are on different
+  networks. Re-check the IP (the app is the source of truth).
 - `Permission denied` → wrong password (default is `123456`).
 - `Connection refused` → robot still booting; wait ~30s and retry.
 
@@ -50,11 +57,11 @@ If SSH logs you in, you're good — type `exit` and continue to Step 1.
 
 ## Step 1 — Get the code onto the robot (SIMPLEST WAY)
 
-Log into the robot, then clone the repo **on the robot**. No copying from the laptop,
-no scp — just two commands.
+Log into the robot, then clone the repo **on the robot** (pull straight from GitHub
+onto Adam). No copying from the laptop, no scp.
 
 ```bash
-ssh booster@192.168.10.102        # password: 123456 (won't show as you type)
+ssh booster@<ROBOT-IP>            # password: 123456 (won't show as you type)
 ```
 
 Now you're ON the robot. Get the code:
@@ -175,7 +182,7 @@ Prefer Step 1 (clone on the robot). Use this only if the robot can't reach GitHu
 From your **laptop**, in the `himpublic/k1_boxing_kit` folder:
 
 ```bash
-./deploy.sh booster@192.168.10.102
+./deploy.sh booster@<ROBOT-IP>
 ```
 
 `scp` will ask for the robot password (`123456`) — it won't show as you type.
@@ -185,5 +192,5 @@ From your **laptop**, in the `himpublic/k1_boxing_kit` folder:
 retry. As a one-time key setup to avoid password prompts entirely:
 
 ```bash
-ssh-copy-id booster@192.168.10.102   # type 123456 once; future connects are passwordless
+ssh-copy-id booster@<ROBOT-IP>   # type 123456 once; future connects are passwordless
 ```
