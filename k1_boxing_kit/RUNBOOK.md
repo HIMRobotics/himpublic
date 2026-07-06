@@ -357,22 +357,42 @@ The built-in punches were recorded on the **T1**, so they look off on the K1. Re
 K1-native poses by hand. **This is read-only and safe — the robot stays in DAMP
 (limp), nothing is driven while recording.**
 
-1. Put the robot in **DAMP** (limp).
-2. Record a punch, one keyframe at a time:
+1. If the autostart service is running, **stop it first** (so it's not holding the
+   arms or double-reading the remote):
+   ```bash
+   sudo systemctl stop k1-boxing
+   ```
+2. Put the robot in **DAMP** (limp).
+3. Record a punch, one keyframe at a time:
 
 ```bash
 ./run.sh capture RIGHT_PUNCH
 ```
 
-3. Move the arms by hand to each position and press **ENTER** to snapshot.
+4. Move the arms by hand to each position and press **ENTER** to snapshot.
    Do a few frames (guard → mid → extended → back). Type `done` when finished.
-4. It prints a `RIGHT_PUNCH = [ ... ]` block. **Copy it into `k1_boxing/actions.py`**,
+5. It prints a `RIGHT_PUNCH = [ ... ]` block. **Copy it into `k1_boxing/actions.py`**,
    replacing the matching sequence (put it above the `_as_dicts` section near the
    bottom).
-5. Repeat for the moves you want. Names to record:
+6. Repeat for the moves you want. Names to record:
    `RIGHT_PUNCH`, `LEFT_PUNCH`, `RIGHT_UPPERCUT`, `FIGHT_POSE_TO_BLOCK`,
    `BLOCK_TO_FIGHT_POSE`, `VICTORY_ANIMATION`.
-6. Test: stand him up, then `./run.sh fight-standing`.
+7. Test: stand him up, then `./run.sh fight-standing`.
+
+### Load new poses into the running robot
+You do **NOT** need to reinstall the service after changing poses — just **restart**
+it so it re-loads `actions.py`:
+
+```bash
+sudo systemctl restart k1-boxing
+```
+
+- **Restart** = after editing poses/code (what you want almost always).
+- **Reinstall** (`./install-service.sh`) = only if you move the folder or change how
+  it launches. Not needed for pose changes.
+- If you edited `actions.py` **directly on the robot**, those changes live only on the
+  robot — commit/push them (or back up the file) so a future `git pull` doesn't wipe
+  them.
 
 Reference — each frame is 8 numbers (radians):
 `(L-shoulder-pitch, L-shoulder-roll, L-elbow-pitch, L-elbow-yaw, R-shoulder-pitch,
