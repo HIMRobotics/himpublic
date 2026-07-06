@@ -62,6 +62,11 @@ cd k1_boxing_kit
 (Use the Wi-Fi IP from the app instead of `192.168.10.102` if you're not on
 Ethernet.)
 
+**It will ask for the robot's password (default `123456`).** The password does
+**not** show as you type — that's normal, just type it and press Enter. If it seems
+stuck, it's waiting for the password. On the first connection it may ask
+`Are you sure you want to continue connecting (yes/no)?` — type `yes`.
+
 ---
 
 ## Step 2 — Log into the robot and go to the kit
