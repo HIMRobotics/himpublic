@@ -42,6 +42,70 @@ def _confirm(skip: bool) -> bool:
         return False
 
 
+def _doctor(robot: BoosterLowLevelController) -> None:
+    """One-shot health check: data link, mode, and remote. Read-only, no motion."""
+    print("\n" + "=" * 60)
+    print("K1 BOXING - SYSTEM CHECK  (nothing moves)")
+    print("=" * 60)
+    all_ok = True
+
+    # 1) Data link to the robot
+    print("\n1) Robot data link...")
+    try:
+        robot.read_low_state_values([0], timeout_s=5.0)
+        print("   PASS - receiving state from the robot.")
+    except Exception as exc:
+        all_ok = False
+        print(f"   FAIL - {exc}")
+        print("   -> Robot powered on? Control service running? Right IP/interface?")
+
+    # 2) Current mode
+    print("\n2) Current robot mode:")
+    robot.log_current_mode()
+
+    # 3) Remote controller
+    print("\n3) Remote controller - PRESS ANY BUTTON now (6 seconds)...")
+    seen = {"n": 0}
+    sub = None
+    try:
+        from booster_robotics_sdk_python import B1RemoteControllerStateSubscriber
+
+        def on_rc(rc):
+            try:
+                if rc.event:
+                    seen["n"] += 1
+            except Exception:
+                pass
+
+        sub = B1RemoteControllerStateSubscriber(on_rc)
+        sub.InitChannel()
+        time.sleep(6)
+    except Exception as exc:
+        print(f"   (remote check error: {exc})")
+    finally:
+        if sub is not None:
+            try:
+                sub.CloseChannel()
+            except Exception:
+                pass
+
+    if seen["n"] > 0:
+        print(f"   PASS - saw {seen['n']} remote inputs.")
+    else:
+        all_ok = False
+        print("   FAIL - no remote input. Turn the remote ON and pair it to THIS robot.")
+
+    # Summary
+    print("\n" + "-" * 60)
+    if all_ok:
+        print("ALL GOOD. Next: stand Adam (STAND then WLAK buttons), then:")
+        print("   ./run.sh fight-standing")
+        print("Or let the script stand him:  ./run.sh fight")
+    else:
+        print("Some checks FAILED above. Fix those, then run  ./run.sh check  again.")
+    print("-" * 60)
+
+
 def _test_remote(robot: BoosterLowLevelController) -> None:
     """Print remote-controller input so you can confirm it's connected. No motion."""
     from booster_robotics_sdk_python import B1RemoteControllerStateSubscriber
@@ -107,6 +171,10 @@ def main() -> None:
         help="Read-only: print remote-controller input to confirm it's connected.",
     )
     parser.add_argument(
+        "--check", action="store_true",
+        help="Read-only: one-shot health check (data link, mode, remote).",
+    )
+    parser.add_argument(
         "--yes", action="store_true", help="Skip the interactive safety confirmation."
     )
     parser.add_argument(
@@ -125,6 +193,11 @@ def main() -> None:
         return
     except Exception as exc:
         logger.error("Failed to init robot: %s", exc)
+        return
+
+    if args.check:
+        _doctor(robot)
+        robot.close()
         return
 
     if args.test_remote:

@@ -102,26 +102,32 @@ class FightingStateMachine:
                 logger.info("Can't %s while blocking!", event.value)
 
     def on_remote(self, rc) -> None:
-        """Map remote button-down edges to fight events (one move at a time)."""
-        if rc.event != EVENT_BTN_DN:
-            return
-        # Drop presses that arrive while a move is still playing.
-        if not self._action_lock.acquire(blocking=False):
-            logger.info("Busy with a move - ignoring input")
-            return
+        """Map remote button-down edges to fight events (one move at a time).
+
+        Runs in the SDK's callback thread, so it must never raise.
+        """
         try:
-            if rc.rt:
-                self.on_event(RobotEvent.RIGHT_PUNCH)
-            elif rc.rb:
-                self.on_event(RobotEvent.RIGHT_UPPERCUT)
-            elif rc.lt:
-                self.on_event(RobotEvent.LEFT_PUNCH)
-            elif rc.a:
-                self.on_event(RobotEvent.BLOCK)
-            elif rc.b:
-                self.on_event(RobotEvent.VICTORY_POSE)
-        finally:
-            self._action_lock.release()
+            if rc.event != EVENT_BTN_DN:
+                return
+            # Drop presses that arrive while a move is still playing.
+            if not self._action_lock.acquire(blocking=False):
+                logger.info("Busy with a move - ignoring input")
+                return
+            try:
+                if rc.rt:
+                    self.on_event(RobotEvent.RIGHT_PUNCH)
+                elif rc.rb:
+                    self.on_event(RobotEvent.RIGHT_UPPERCUT)
+                elif rc.lt:
+                    self.on_event(RobotEvent.LEFT_PUNCH)
+                elif rc.a:
+                    self.on_event(RobotEvent.BLOCK)
+                elif rc.b:
+                    self.on_event(RobotEvent.VICTORY_POSE)
+            finally:
+                self._action_lock.release()
+        except Exception as exc:
+            logger.error("Remote handler error (ignored): %s", exc)
 
     def return_to_guard(self) -> None:
         """Best-effort return to the neutral fight stance."""

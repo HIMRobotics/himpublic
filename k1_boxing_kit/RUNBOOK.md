@@ -7,6 +7,24 @@ and the Booster SDK installed on the robot.
 
 ---
 
+## TL;DR — just do this (on the robot)
+
+```bash
+ssh booster@<ROBOT-IP>                 # password: 123456  (find IP: Booster app)
+git clone https://github.com/HIMRobotics/himpublic.git   # or: cd himpublic && git pull
+cd himpublic/k1_boxing_kit
+
+./run.sh check          # 1) confirms link + remote are working (nothing moves)
+./run.sh verify         # 2) confirm arm joints (move arms by hand)
+# stand Adam: press STAND then WLAK on his back panel
+./run.sh fight-standing # 3) box! RT/LT punch, RB uppercut, A block, B victory
+```
+
+Ctrl-C anytime = stop + go limp (safe). If a step fails, it prints what to fix.
+Full detail + troubleshooting below.
+
+---
+
 ## SAFETY — read this first (30 seconds)
 
 - Keep people **out of arm's reach**. Punches are real arm motion.
