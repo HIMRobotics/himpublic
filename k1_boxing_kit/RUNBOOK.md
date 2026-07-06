@@ -19,6 +19,35 @@ The legs stay on the robot's own balance controller — this kit only moves the 
 
 ---
 
+## Step 0 — Test the connection first (SSH + IP)
+
+Do this before anything else. Nothing on the robot moves here.
+
+**Wired (Ethernet) — recommended for the demo:**
+- Robot IP is `192.168.10.102`.
+- Set your laptop's wired network to a static IP: address `192.168.10.10`,
+  netmask `255.255.255.0`, gateway `192.168.10.1`.
+
+**Wi-Fi:** the IP is whatever the network assigns — find it in the Booster app.
+Use that IP below instead of `192.168.10.102`.
+
+Then from your laptop:
+
+```bash
+ping 192.168.10.102              # should get replies (Ctrl-C to stop)
+ssh booster@192.168.10.102       # password: 123456
+```
+
+If SSH logs you in, you're good — type `exit` and continue to Step 1.
+
+**If it fails:**
+- `Request timeout` / no ping → wrong IP, cable not seated, or laptop not on the
+  `192.168.10.x` subnet (re-check the static IP above). On Wi-Fi, re-check the app.
+- `Permission denied` → wrong password (default is `123456`).
+- `Connection refused` → robot still booting; wait ~30s and retry.
+
+---
+
 ## Step 1 — Get the code on the robot
 
 **If the robot already has this repo:** skip to Step 2.
@@ -27,18 +56,18 @@ The legs stay on the robot's own balance controller — this kit only moves the 
 
 ```bash
 cd k1_boxing_kit
-./deploy.sh booster@<ROBOT-IP>
+./deploy.sh booster@192.168.10.102
 ```
 
-Replace `<ROBOT-IP>` with the robot's IP. (Ask whoever set up the robot, or check
-the Booster app.)
+(Use the Wi-Fi IP from the app instead of `192.168.10.102` if you're not on
+Ethernet.)
 
 ---
 
 ## Step 2 — Log into the robot and go to the kit
 
 ```bash
-ssh booster@<ROBOT-IP>
+ssh booster@192.168.10.102        # password: 123456
 cd ~/k1_boxing_kit
 ```
 
