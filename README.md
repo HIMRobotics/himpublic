@@ -74,10 +74,35 @@ python code/voice_tts.py --generate
 | Script | What it does |
 |--------|--------------|
 | `adam_reacts.py` | Main reaction system - press keys to trigger reactions |
+| `adam_boxing_gamepad.py` | Gamepad-controlled punching (arms-only, safe defaults) |
+| `../k1_boxing_kit/` | Remote-controlled K1 boxing kit (ported from T1, balance-safe) |
 | `realtime_voice.py` | Real-time voice conversation with Adam |
 | `voice_tts.py` | Generate voice clips with ElevenLabs |
 | `motion_capture.py` | Record and playback arm motions |
 | `quick_test.py` | All-in-one test menu |
+
+## K1 Boxing (remote-controlled)
+
+Throw punches with the Booster remote. Ported from the T1 fight mode and adapted
+for the K1: the legs stay on the onboard balance controller (`kWalking`) while only
+the arms are driven via `UpperBodyCustomControl`.
+
+This is a self-contained kit in [`../k1_boxing_kit/`](../k1_boxing_kit/) — copy it
+to the robot and run. See [`../k1_boxing_kit/RUNBOOK.md`](../k1_boxing_kit/RUNBOOK.md)
+for the simple step-by-step.
+
+```bash
+cd ../k1_boxing_kit
+./deploy.sh booster@<ROBOT-IP>   # copy kit onto the robot (from your laptop)
+# then, on the robot:
+./run.sh verify                   # FIRST: confirm arm joint indices (no motion)
+./run.sh fight                    # remote-controlled fight mode (slow)
+```
+
+Remote: `RT` right punch, `RB` right uppercut, `LT` left punch, `A` block, `B` victory.
+
+Safety: start the robot in DAMP, keep a spotter, support it for the first runs, and
+use slow speed. Poses were recorded on the T1, so re-tune on the K1.
 
 ## The Goal
 
