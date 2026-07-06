@@ -189,11 +189,15 @@ class RemoteTriggeredController:
     def _toggle(self) -> None:
         with self._toggle_lock:
             if not self.active:
+                # Soft check: if we can't positively confirm WALK mode we still
+                # proceed (mode read-back is unreliable on some units). You were
+                # told to stand him first, and a spotter should be present.
                 if not self.booster.is_walking():
                     logger.warning(
-                        "Stand the robot first (LT+START, then RT+A), then toggle again."
+                        "Could not confirm WALK mode (mode reads as %s). Proceeding "
+                        "anyway - MAKE SURE he is standing and balancing!",
+                        self.booster.get_mode(),
                     )
-                    return
                 logger.info("BOXING ON")
                 self.booster.set_upper_body_control(True)
                 self.sm.return_to_guard()
