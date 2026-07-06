@@ -42,6 +42,38 @@ def _confirm(skip: bool) -> bool:
         return False
 
 
+def _test_remote(robot: BoosterLowLevelController) -> None:
+    """Print remote-controller input so you can confirm it's connected. No motion."""
+    from booster_robotics_sdk_python import B1RemoteControllerStateSubscriber
+
+    buttons = ("x", "y", "a", "b", "lb", "rb", "lt", "rt", "ls", "rs",
+               "start", "back", "hat_u", "hat_d", "hat_l", "hat_r")
+
+    def on_rc(rc):
+        pressed = [name for name in buttons if getattr(rc, name, False)]
+        sticks = f"lx={rc.lx:+.2f} ly={rc.ly:+.2f} rx={rc.rx:+.2f} ry={rc.ry:+.2f}"
+        if pressed or rc.event:
+            print(f"event={hex(rc.event)}  buttons={pressed or '-'}  {sticks}")
+
+    print("\nTEST REMOTE - press buttons / move sticks on the Booster remote.")
+    print("You should see lines appear below. Nothing on the robot moves.")
+    print("If NOTHING appears when you press buttons, the remote is not connected.")
+    print("Ctrl-C to stop.\n")
+
+    sub = B1RemoteControllerStateSubscriber(on_rc)
+    sub.InitChannel()
+    stop = threading.Event()
+    signal.signal(signal.SIGINT, lambda *_: stop.set())
+    try:
+        stop.wait()
+    finally:
+        try:
+            sub.CloseChannel()
+        except Exception:
+            pass
+        print("\nDone testing remote.")
+
+
 def _verify_joints(robot: BoosterLowLevelController) -> None:
     """Print live q values so you can confirm which serial indices are the arms.
 
@@ -71,6 +103,10 @@ def main() -> None:
         help="Read-only: print arm joint values to confirm indexing (no motion).",
     )
     parser.add_argument(
+        "--test-remote", action="store_true",
+        help="Read-only: print remote-controller input to confirm it's connected.",
+    )
+    parser.add_argument(
         "--yes", action="store_true", help="Skip the interactive safety confirmation."
     )
     parser.add_argument(
@@ -89,6 +125,11 @@ def main() -> None:
         return
     except Exception as exc:
         logger.error("Failed to init robot: %s", exc)
+        return
+
+    if args.test_remote:
+        _test_remote(robot)
+        robot.close()
         return
 
     if args.verify_joints:

@@ -3,6 +3,7 @@
 # is installed.
 #
 #   ./run.sh verify           # read-only: confirm arm joint indices (no motion)
+#   ./run.sh remote           # read-only: check the remote controller is connected
 #   ./run.sh fight            # fight mode, slow speed (safe default)
 #   ./run.sh fight medium     # fight mode, medium speed (only after tuning!)
 #   ./run.sh fight-standing   # fight mode when Adam is ALREADY standing (buttons/app)
@@ -21,6 +22,9 @@ case "$MODE" in
   verify)
     exec python3 -m k1_boxing --verify-joints --network-interface "$IFACE"
     ;;
+  remote)
+    exec python3 -m k1_boxing --test-remote --network-interface "$IFACE"
+    ;;
   fight)
     exec python3 -m k1_boxing --speed "$SPEED" --network-interface "$IFACE"
     ;;
@@ -33,7 +37,7 @@ case "$MODE" in
     exec python3 -m k1_boxing.capture --name "${2:-MY_POSE}" --network-interface "$IFACE"
     ;;
   *)
-    echo "Usage: ./run.sh [verify|fight|fight-standing|capture] [slow|medium|fast | POSE_NAME]"
+    echo "Usage: ./run.sh [verify|remote|fight|fight-standing|capture] [slow|medium|fast | POSE_NAME]"
     exit 1
     ;;
 esac

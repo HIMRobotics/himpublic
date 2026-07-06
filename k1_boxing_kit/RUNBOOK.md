@@ -102,6 +102,21 @@ This is **read-only** — nothing moves on its own.
 
 ---
 
+## Step 2.5 — Check the remote is connected (no motion)
+
+If punches don't trigger, the remote may not be paired to the robot. Test it:
+
+```bash
+./run.sh remote
+```
+
+Press buttons / move sticks on the Booster remote. You should see lines appear.
+- **Lines appear** → remote is connected. Ctrl-C and continue.
+- **Nothing appears** → the remote isn't connected. Turn the remote on and pair it
+  to the robot (via the Booster app / the robot's pairing procedure), then retry.
+
+---
+
 ## Step 3 — Box!
 
 ```bash
