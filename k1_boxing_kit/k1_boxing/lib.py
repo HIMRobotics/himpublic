@@ -126,18 +126,40 @@ class BoosterLowLevelController:
         self.log_current_mode()
         logger.info("Upper-body control ready. Legs remain balanced.")
 
-    def log_current_mode(self) -> None:
-        """Query and log the robot's current mode (best-effort)."""
+    def get_mode(self):
+        """Return the current RobotMode (or None if it can't be read)."""
         try:
             from booster_robotics_sdk_python import GetModeResponse
 
             resp = GetModeResponse()
             if self.loco_client.GetMode(resp) == 0:
-                logger.info("Current robot mode: %s", getattr(resp, "mode", "?"))
-            else:
-                logger.warning("Could not read current mode.")
+                return getattr(resp, "mode", None)
         except Exception as exc:
             logger.warning("GetMode not available: %s", exc)
+        return None
+
+    def log_current_mode(self) -> None:
+        """Query and log the robot's current mode (best-effort)."""
+        mode = self.get_mode()
+        if mode is None:
+            logger.warning("Could not read current mode.")
+        else:
+            logger.info("Current robot mode: %s", mode)
+
+    def is_walking(self) -> bool:
+        """True if the robot is in WALK (balancing) mode."""
+        try:
+            from booster_robotics_sdk_python import RobotMode
+
+            mode = self.get_mode()
+            if mode is None:
+                return False
+            try:
+                return int(mode) == int(RobotMode.kWalking)
+            except Exception:
+                return mode == RobotMode.kWalking
+        except Exception:
+            return False
 
     def damp(self) -> None:
         """Put the robot into damping mode (limp/compliant)."""

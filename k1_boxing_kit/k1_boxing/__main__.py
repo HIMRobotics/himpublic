@@ -187,7 +187,21 @@ def main() -> None:
         help="On exit, go limp (DAMP) instead of staying upright in ready mode. "
              "Only use this if the robot is supported/hanging.",
     )
+    parser.add_argument(
+        "--wait-standing", action="store_true",
+        help="Wait until the robot is stood up (WALK mode) before activating boxing.",
+    )
+    parser.add_argument(
+        "--auto", action="store_true",
+        help="Hands-free demo: wait until the robot is stood up, then activate boxing "
+             "(implies --yes --already-standing --wait-standing). For the autostart service.",
+    )
     args = parser.parse_args()
+
+    if args.auto:
+        args.yes = True
+        args.already_standing = True
+        args.wait_standing = True
 
     robot = BoosterLowLevelController(network_interface=args.network_interface)
 
@@ -231,7 +245,18 @@ def main() -> None:
     signal.signal(signal.SIGTERM, lambda *_: stop.set())
 
     try:
-        # NOTE: this stands the robot up and starts balancing
+        # Hands-free: wait until a human stands the robot up (STAND then WLAK).
+        if args.wait_standing:
+            logger.info("Waiting for the robot to be stood up (press STAND then WLAK)...")
+            while not stop.is_set():
+                if robot.is_walking():
+                    logger.info("Robot is balancing (WALK) - activating boxing.")
+                    break
+                stop.wait(1.0)
+            if stop.is_set():
+                return  # cleanup happens in finally
+
+        # NOTE: if not already standing, this stands the robot up
         # (DAMP -> kPrepare -> kWalking), then takes the guard pose. Be ready.
         sm = FightingStateMachine(
             robot, speed=args.speed, time_gap_s=0.05,

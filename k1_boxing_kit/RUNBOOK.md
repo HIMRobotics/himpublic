@@ -196,6 +196,50 @@ control (it does NOT try to re-stand him).
 
 ---
 
+## Demo without a laptop (no SSH each time)
+
+**Level 1 — SSH once, then leave it running.** Start `./run.sh fight-standing` at the
+beginning of the demo and just leave the terminal open. The remote does everything
+after that; you don't touch the laptop again until you're done.
+
+**Level 2 — Autostart service (never need the laptop after setup).** Install once:
+
+```bash
+# on the robot, one time:
+cd ~/himpublic/k1_boxing_kit
+./install-service.sh
+```
+
+**This is safe and fully reversible.** It only adds ONE file
+(`/etc/systemd/system/k1-boxing.service`) and does **not** touch any of Booster's own
+code or config. It also **waits** until you stand Adam up before it does anything, and
+it will **not** auto-restart/loop if something goes wrong (it just stops).
+
+After that, for every demo:
+1. Power on Adam, wait for the boot tone.
+2. Stand him up: **STAND** then **WLAK** on his back panel.
+3. Boxing activates automatically (it waits for him to be standing first) — just use
+   the remote. No laptop, no SSH.
+
+### Kill it / remove it (save these)
+- **Stop right now:** on the controller press **LT + BACK** (DAMP) or the **F1**
+  button. That makes him safe instantly.
+- **Stop the service:** `sudo systemctl stop k1-boxing`
+- **Never start on boot again:** `sudo systemctl disable k1-boxing`
+- **REMOVE IT COMPLETELY (one command):**
+  ```bash
+  ./uninstall-service.sh
+  ```
+  This stops it, disables it, and deletes the one file — the robot is back exactly as
+  before. You can still run boxing manually anytime with `./run.sh fight-standing`.
+- **Watch what it's doing:** `journalctl -u k1-boxing -f`
+
+> Nervous about it for the demo? Skip Level 2 entirely and just use **Level 1**
+> (SSH once, run `./run.sh fight-standing`, leave it open). Same result, nothing
+> installed on the robot.
+
+---
+
 ## If something looks wrong
 
 - **He's NOT standing when you start fight mode** → the SDK stand-up was likely
