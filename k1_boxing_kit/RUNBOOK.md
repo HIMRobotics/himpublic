@@ -163,24 +163,31 @@ Handy built-in button combos (from Booster):
 
 ## Step 3 — Box!
 
+**Stand Adam up first** (press **STAND** then **WLAK** on his back panel, or use the
+app) so he's upright and balancing. Then run:
+
 ```bash
-./run.sh fight
+./run.sh fight-standing
 ```
 
+This is the normal command — it assumes he's already standing and just turns on arm
+control (it does NOT try to re-stand him).
+
 - Type `yes` at the safety prompt.
-- **The robot will STAND UP and start balancing, then raise its fists.**
-  Mode sequence: `DAMP → prepare → walking` (legs balance) + arm control on.
-  **Keep hands on it for this part.**
-- Use the **remote** (face buttons + D-pad — the triggers/bumpers often don't
-  register on this controller, so we use the buttons that do):
+- He takes the **guard stance**, then you box with the **remote** (face buttons +
+  D-pad — the triggers/bumpers often don't register on this controller):
   - **Y** = right punch   (RT also, if it works)
   - **X** = left punch    (LT also, if it works)
   - **B** = right uppercut (RB also, if it works)
-  - **A** = block on/off
+  - **A** = block (quick guard-up, then back)
   - **D-pad Up** = victory pose
 - Press **Ctrl-C** when done. It returns to guard, then leaves him **standing in
   ready mode (not limp)**. Always exit this way. (Add `--damp-on-exit` only if he's
   supported and you want him to go limp instead.)
+
+> Not standing him yourself? `./run.sh fight` will try to stand him up
+> (`DAMP → prepare → walking`) — but many robots only stand from the physical
+> buttons, so `fight-standing` above is the reliable path.
 
 ### Robot modes (what they mean)
 - **DAMP** = limp, no stiffness. Start here. (Ctrl-C no longer ends in DAMP.)
